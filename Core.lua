@@ -6,6 +6,7 @@ local THIS_VERSION = C_AddOns.GetAddOnMetadata("CritSounds", "Version")
 local defaults = {
 	profile = {
 		isEnabled = true,
+		soundFrequency = 100,
 		-- Soundpack = "bozo",
 	},
 }
@@ -23,6 +24,16 @@ local options = {
 			desc = CRITS_TEXT_OPT_TOOL_CRITSENABLED,
 			get = "GetIsEnabled",
 			set = "SetIsEnabled"
+		},
+		soundFrequency = {
+			type = "range",
+			order = 2,
+			name = "Crit Sound Frequency",
+			desc = "Set how often you want a crit to make a sound. Use this if crits are happening too often.",
+			width = 1.5,
+			get = "GetSoundFrequency",
+			set = "SetSoundFrequency",
+			min = 0, max = 100, step = 1,
 		},
 		-- Soundpack = {
 		-- 	type = "input",
@@ -65,6 +76,12 @@ function CritSounds:GetIsEnabled(info)
 end
 function CritSounds:SetIsEnabled(info, value)
 	self.db.profile.isEnabled = value;
+end
+function CritSounds:GetSoundFrequency(info)
+	return self.db.profile.soundFrequency;
+end
+function CritSounds:SetSoundFrequency(info, value)
+	self.db.profile.soundFrequency = value;
 end
 
 -- function CritSounds:GetSoundpack(info)
