@@ -7,6 +7,7 @@ local defaults = {
 	profile = {
 		isEnabled = true,
 		soundFrequency = 100,
+		soundChannel = "Master",
 		-- Soundpack = "bozo",
 	},
 }
@@ -19,7 +20,7 @@ local options = {
 		isEnabled = {
 			type = "toggle",
 			order = 1,
-			width = "full",
+			width = 1.5,
 			name = CRITS_TEXT_OPT_VAR_CRITSENABLED,
 			desc = CRITS_TEXT_OPT_TOOL_CRITSENABLED,
 			get = "GetIsEnabled",
@@ -27,7 +28,7 @@ local options = {
 		},
 		soundFrequency = {
 			type = "range",
-			order = 2,
+			order = 3,
 			name = "Crit Sound Frequency",
 			desc = "Set how often you want a crit to make a sound. Use this if crits are happening too often.",
 			width = 1.5,
@@ -35,6 +36,29 @@ local options = {
 			set = "SetSoundFrequency",
 			min = 0, max = 100, step = 1,
 		},
+		soundChannel = {
+			type = "select",
+			order = 5,
+			name = "Sound Channel",
+			desc = "Pick the sound channel crit sounds will be played through (you can adjust volume through the normal settings)",
+			width = 1,
+			get = "GetSoundChannel",
+			set = "SetSoundChannel",
+			values = {
+				Master = "Master",
+				Music = "Music",
+				Effects = "Effects",
+				Ambiance = "Ambiance",
+				Dialog = "Dialog",
+			},
+			sorting = {
+				"Master",
+				"Music",
+				"Effects",
+				"Ambiance",
+				"Dialog",
+			}
+		}
 		-- Soundpack = {
 		-- 	type = "input",
 		-- 	order = 15,
@@ -82,6 +106,12 @@ function CritSounds:GetSoundFrequency(info)
 end
 function CritSounds:SetSoundFrequency(info, value)
 	self.db.profile.soundFrequency = value;
+end
+function CritSounds:GetSoundChannel(info)
+	return self.db.profile.soundChannel;
+end
+function CritSounds:SetSoundChannel(info, value)
+	self.db.profile.soundChannel = value;
 end
 
 -- function CritSounds:GetSoundpack(info)
