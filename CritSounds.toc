@@ -1,0 +1,18 @@
+## Interface: 50500,50501 110200,110205
+## Title: Crit Sounds
+## Version: 1.0.0
+## Notes: An addon to make all criticals from you (damage, healing, or pet crits) make funny meme sounds.
+
+## Author: Corigador of Mankrik (NA)
+
+## SavedVariablesPerCharacter: CritSoundsDB
+
+Libs\LibStub\LibStub.lua
+Libs\AceEvent-3.0\AceEvent-3.0.xml
+Libs\AceDB-3.0\AceDB-3.0.xml
+Libs\AceConfig-3.0\AceConfig-3.0.xml
+
+embeds.xml
+
+Core.lua
+CritSounds.lua

@@ -1,0 +1,49 @@
+{
+    "Lua.diagnostics.globals": [
+        "ReloadUI",
+        "DEFAULT_CHAT_FRAME",
+        "SELECTED_CHAT_FRAME",
+        "NORMAL_FONT_COLOR",
+        "ACCEPT",
+        "CANCEL",
+        "Settings",
+        "InterfaceOptions_AddCategory",
+        "SlashCmdList",
+        "hash_SlashCmdList",
+        "NORMAL_FONT_COLOR_CODE",
+        "FONT_COLOR_CODE_CLOSE",
+        "CLOSE",
+        "SetDesaturation",
+        "ColorPickerFrame",
+        "OpacitySliderFrame",
+        "OKAY",
+        "NOT_BOUND",
+        "IsSecureCmd",
+        "NUM_CHAT_WINDOWS",
+        "ChatEdit_GetActiveWindow",
+        "InterfaceOptionsFrame_OpenToCategory",
+        "UIErrorsFrame",
+        "message",
+        "CritSounds",
+        "UIParent",
+        "GameFontNormal",
+        "GameFontHighlight",
+        "GameFontHighlightLarge",
+        "GameFontHighlightSmall"
+    ],
+    "Lua.runtime.version": "Lua 5.1",
+    "Lua.runtime.builtin": {
+        "basic": "disable",
+        "debug": "disable",
+        "io": "disable",
+        "math": "disable",
+        "os": "disable",
+        "package": "disable",
+        "string": "disable",
+        "table": "disable",
+        "utf8": "disable"
+    },
+    "Lua.workspace.library": [
+        "~\\.vscode\\extensions\\ketho.wow-api-0.17.6\\Annotations"
+    ]
+}
