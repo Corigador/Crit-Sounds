@@ -7,13 +7,13 @@
 
 ## SavedVariablesPerCharacter: CritSoundsDB
 
+embeds.xml
+
 Libs\LibStub\LibStub.lua
 Libs\AceEvent-3.0\AceEvent-3.0.xml
 Libs\AceDB-3.0\AceDB-3.0.xml
 Libs\AceGUI-3.0\AceGUI-3.0.xml
 Libs\AceConfig-3.0\AceConfig-3.0.xml
-
-embeds.xml
 
 Core.lua
 CritSounds.lua
