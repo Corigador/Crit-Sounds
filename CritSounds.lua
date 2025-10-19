@@ -11,7 +11,7 @@ function CritSounds:OnCombatLogEventUnfiltered()
                     CritSounds_MakeSound(self.db.profile.soundFrequency, self.db.profile.soundChannel);
                 end
             else
-                if (critical ~= false or (subevent == "SWING_DAMAGE" and resisted ~= false)) then --swing_damage also lacks 3 params most other _damage has
+                if (critical == true or (subevent == "SWING_DAMAGE" and resisted == true)) then --swing_damage also lacks 3 params most other _damage has
                     CritSounds_MakeSound(self.db.profile.soundFrequency, self.db.profile.soundChannel);
                 end
             end
