@@ -1,4 +1,4 @@
-## Interface: 11507, 20504, 30405, 50500, 50501, 50504, 110200, 110205
+## Interface: 11509, 20506, 38002, 50504, 120100
 ## Title: Crit Sounds
 ## Version: v1.4.0
 ## Notes: An addon to make all criticals from you (damage, healing, and pet crits) make funny meme sounds.
