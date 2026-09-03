@@ -133,6 +133,19 @@ end
 function CritSounds_SetPack()
 
 	BOZO_SOUNDS = {
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\67.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\not_a_bug.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\auroraborealis.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\longlong_man.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\ooooh.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\boom.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\bam.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\badabopboom.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\bap.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\pow.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\its_a_rock.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\i_need_it.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\get_some_help.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\Emotional Damage.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\Huh sound.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\Lightning Bolt.mp3",
@@ -190,6 +203,7 @@ function CritSounds_SetPack()
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m12.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m13.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m14.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m15.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m2.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m3.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m4.mp3",
