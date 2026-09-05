@@ -1,3 +1,11 @@
+local InCombat = false
+local RecentCrits = 0
+local RecentHits = 0
+local CritsHappening = false
+local StopLoggingHits = false
+local EstimatedCritRate = 30
+local FirstEstimateDone = false
+
 function CritSounds:OnCombatLogEventUnfiltered()
     --See https://warcraft.wiki.gg/wiki/COMBAT_LOG_EVENT for more info on these
     local timestamp, subevent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, spellID, spellName,
@@ -18,6 +26,101 @@ function CritSounds:OnCombatLogEventUnfiltered()
         end
 
     end
+end
+
+function CritSounds:CastSuccess(eventLogName, unitTarget, castGUID, spellID, castBarID)
+
+    if (self.db.profile.isEnabled and InCombat and CritsHappening and (unitTarget == "player" or unitTarget == "pet")) then
+
+        local simulatedCrit = CritSounds_SimulateCrit()
+        if (simulatedCrit) then
+            CritSounds_MakeSound(self.db.profile.soundFrequency, self.db.profile.soundChannel, self.db.profile.soundPack);
+        end
+
+    end
+
+end
+
+function CritSounds:UnitCombatValidator(eventLogName, unitTarget, event, flagText, amount, schoolMask)
+
+    local ignoreEvent = unitTarget == "focus" or unitTarget == "target"
+    if (ignoreEvent) then
+        return
+    end
+
+    local isEnemy = string.find(unitTarget, "arena") or string.find(unitTarget, "boss") or string.find(unitTarget, "nameplate")
+
+    if (flagText == "CRITICAL" and
+        ((event == "WOUND" and isEnemy) or
+        (event == "HEAL" and not isEnemy))) then
+
+        CritsHappening = true;
+
+        if (not StopLoggingHits) then
+            RecentCrits = RecentCrits + 1
+            RecentHits = RecentHits + 1
+        end
+
+    elseif ((event == "WOUND" and isEnemy) or
+        (event == "HEAL" and not isEnemy)) then
+
+        if (not StopLoggingHits) then
+            RecentHits = RecentHits + 1
+        end
+
+    end
+
+    if (RecentHits > 200) then
+
+        EstimatedCritRate = (RecentCrits / RecentHits) * 100
+        StopLoggingHits = true --just in case this causes lag
+
+    elseif (RecentHits > 30 and not FirstEstimateDone) then
+
+        EstimatedCritRate = (RecentCrits / RecentHits) * 100
+        FirstEstimateDone = true
+
+    end
+
+end
+
+function CritSounds:LeftCombat(eventLogName)
+
+    InCombat = false
+    CritsHappening = false
+    RecentCrits = 0
+    RecentHits = 0
+    StopLoggingHits = false
+    EstimatedCritRate = 30
+    FirstEstimateDone = false
+
+end
+
+function CritSounds:EnteredCombat(eventLogName)
+
+    InCombat = true
+    CritsHappening = false
+    RecentCrits = 0
+    RecentHits = 0
+    StopLoggingHits = false
+    EstimatedCritRate = 30
+    FirstEstimateDone = false
+
+end
+
+function CritSounds_SimulateCrit()
+
+    local simulatedCrit = true;
+
+    if (EstimatedCritRate < 100) then
+        local simulation = math.random(0, 100)
+        if (simulation > EstimatedCritRate) then
+            simulatedCrit = false;
+        end
+    end
+
+    return simulatedCrit;
+
 end
 
 function CritSounds_MakeSound(soundFrequency, soundChannel, soundPack)

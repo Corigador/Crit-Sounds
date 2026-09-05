@@ -96,11 +96,24 @@ function CritSounds:OnInitialize()
 end
 
 function CritSounds:OnEnable()
-    self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED", "OnCombatLogEventUnfiltered")
+	local _, _, _, interfaceVersion = GetBuildInfo()
+	if (interfaceVersion < 120000) then
+		self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED", "OnCombatLogEventUnfiltered")
+	else
+		self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", "CastSuccess")
+		self:RegisterEvent("UNIT_COMBAT", "UnitCombatValidator")
+		self:RegisterEvent("PLAYER_REGEN_ENABLED", "LeftCombat")
+		self:RegisterEvent("PLAYER_REGEN_DISABLED", "EnteredCombat")
+	end
 end
 
 function CritSounds:SlashCommand()
-	Settings.OpenToCategory(self.mainFrameId)
+	local _, _, _, interfaceVersion = GetBuildInfo()
+	if (interfaceVersion < 120000) then
+		Settings.OpenToCategory(self.mainFrameId)
+	else
+		ACD:Open("Crit Sounds_options")
+	end
 end
 
 
