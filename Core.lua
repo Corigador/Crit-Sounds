@@ -146,6 +146,14 @@ end
 function CritSounds_SetPack()
 
 	BOZO_SOUNDS = {
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\cj_again.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\halo.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\toad_scream.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\doakes_sus.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\gnome_woo.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\faah.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\dixie_horn.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\waltuh.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\67.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\not_a_bug.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\auroraborealis.mp3",
