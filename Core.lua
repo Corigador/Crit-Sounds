@@ -97,7 +97,7 @@ end
 
 function CritSounds:OnEnable()
 	local _, _, _, interfaceVersion = GetBuildInfo()
-	if (interfaceVersion < 120000) then
+	if (interfaceVersion < 120000 and (interfaceVersion < 16000 or 20000 < interfaceVersion)) then
 		self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED", "OnCombatLogEventUnfiltered")
 	else
 		self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", "CastSuccess")
@@ -109,7 +109,7 @@ end
 
 function CritSounds:SlashCommand()
 	local _, _, _, interfaceVersion = GetBuildInfo()
-	if (interfaceVersion < 120000) then
+	if (interfaceVersion < 120000 and (interfaceVersion < 16000 or 20000 < interfaceVersion)) then
 		Settings.OpenToCategory(self.mainFrameId)
 	else
 		ACD:Open("Crit Sounds_options")
