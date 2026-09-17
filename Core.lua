@@ -71,9 +71,11 @@ local options = {
 				Main = "Main",
 				MJ = "MJ",
 				Waltuh = "Waltuh",
+				Faah = "Faah"
 			},
 			sorting = {
 				"Main",
+				"Faah",
 				"MJ",
 				"Waltuh",
 			}
@@ -146,6 +148,9 @@ end
 function CritSounds_SetPack()
 
 	BOZO_SOUNDS = {
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\final_ko.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\door_stuck.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\ultra_instinct.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\cj_again.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\halo.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\toad_scream.mp3",
@@ -295,6 +300,10 @@ function CritSounds_SetPack()
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\waltuh.mp3",
 	};
 
+	FAAH_PACK = {
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\faah.mp3",
+	}
+
 	MJ_PACK = {
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m1.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m10.mp3",
@@ -302,6 +311,7 @@ function CritSounds_SetPack()
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m12.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m13.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m14.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m15.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m2.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m3.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m4.mp3",

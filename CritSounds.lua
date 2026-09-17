@@ -132,6 +132,8 @@ function CritSounds_MakeSound(soundFrequency, soundChannel, soundPack)
             soundArray = MJ_PACK;
         elseif (soundPack == "Waltuh") then
             soundArray = WALTUH_PACK;
+        elseif (soundPack == "Faah") then
+            soundArray = FAAH_PACK;
         end
     end
 
