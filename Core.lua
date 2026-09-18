@@ -110,12 +110,8 @@ function CritSounds:OnEnable()
 end
 
 function CritSounds:SlashCommand()
-	local _, _, _, interfaceVersion = GetBuildInfo()
-	if (interfaceVersion < 120000 and (interfaceVersion < 16000 or 20000 < interfaceVersion)) then
-		Settings.OpenToCategory(self.mainFrameId)
-	else
-		ACD:Open("Crit Sounds_options")
-	end
+	Settings.OpenToCategory(self.mainFrameId)
+	-- ACD:Open("Crit Sounds_options") -- Fallback if needed
 end
 
 
