@@ -144,6 +144,13 @@ end
 function CritSounds_SetPack()
 
 	BOZO_SOUNDS = {
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\got.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\croissont.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\chia.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\bury_me.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\give_money.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\whistle.mp3",
+		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\beam.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\final_ko.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\door_stuck.mp3",
 		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\ultra_instinct.mp3",
