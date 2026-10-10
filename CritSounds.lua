@@ -5,6 +5,7 @@ local CritsHappening = false
 local StopLoggingHits = false
 local EstimatedCritRate = 30
 local FirstEstimateDone = false
+local SecondEstimateDone = false
 
 function CritSounds:OnCombatLogEventUnfiltered()
     --See https://warcraft.wiki.gg/wiki/COMBAT_LOG_EVENT for more info on these
@@ -75,7 +76,12 @@ function CritSounds:UnitCombatValidator(eventLogName, unitTarget, event, flagTex
         EstimatedCritRate = (RecentCrits / RecentHits) * 100
         StopLoggingHits = true --just in case this causes lag
 
-    elseif (RecentHits > 30 and not FirstEstimateDone) then
+    elseif (RecentHits > 70 and not SecondEstimateDone) then
+
+        EstimatedCritRate = (RecentCrits / RecentHits) * 100
+        SecondEstimateDone = true
+
+    elseif (RecentHits > 20 and not FirstEstimateDone) then
 
         EstimatedCritRate = (RecentCrits / RecentHits) * 100
         FirstEstimateDone = true
@@ -93,6 +99,7 @@ function CritSounds:LeftCombat(eventLogName)
     StopLoggingHits = false
     EstimatedCritRate = 30
     FirstEstimateDone = false
+    SecondEstimateDone = false
 
 end
 
@@ -105,6 +112,7 @@ function CritSounds:EnteredCombat(eventLogName)
     StopLoggingHits = false
     EstimatedCritRate = 30
     FirstEstimateDone = false
+    SecondEstimateDone = false
 
 end
 
