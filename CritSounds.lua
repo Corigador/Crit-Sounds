@@ -7,9 +7,11 @@ local EstimatedCritRate = 30
 local FirstEstimateDone = false
 local SecondEstimateDone = false
 local CRIT_CAST_WINDOW = 0.3 -- seconds after your own cast in which a crit heal counts as a direct heal (solo only)
+local GROUP_CAST_WINDOW = 0.5 -- seconds after your own cast in which a crit is assumed to be yours (group only)
 local LastCritKey = nil
 local LastCritTime = 0
 local LastOwnCast = 0
+local LastOwnCastUsed = false
 
 function CritSounds:OnCombatLogEventUnfiltered()
     --See https://warcraft.wiki.gg/wiki/COMBAT_LOG_EVENT for more info on these
@@ -48,23 +50,20 @@ function CritSounds:CastSuccess(eventLogName, unitTarget, castGUID, spellID, cas
 
     if (self.db.profile.isEnabled and (unitTarget == "player" or unitTarget == "pet")) then
 
+        -- opens a window in which the next real crit is attributed to you
         LastOwnCast = GetTime()
-
-        -- solo uses real crits from UnitCombatValidator, so only simulate in a group
-        if (InCombat and CritsHappening and IsInGroup()) then
-
-            local simulatedCrit = CritSounds_SimulateCrit()
-            if (simulatedCrit) then
-                CritSounds_MakeSound(self.db.profile.soundFrequency, self.db.profile.soundChannel, self.db.profile.soundPack);
-            end
-
-        end
+        LastOwnCastUsed = false
 
     end
 
 end
 
 function CritSounds:UnitCombatValidator(eventLogName, unitTarget, event, flagText, amount, schoolMask)
+
+    -- secret values (returned in groups on some clients) can't be compared or used in logic
+    if (issecretvalue and (issecretvalue(amount) or issecretvalue(flagText) or issecretvalue(unitTarget))) then
+        return
+    end
 
     -- solo needs "target" events for real crits; in a group they stay ignored as before
     local ignoreEvent = unitTarget == "focus" or (unitTarget == "target" and IsInGroup())
@@ -76,8 +75,9 @@ function CritSounds:UnitCombatValidator(eventLogName, unitTarget, event, flagTex
         or ((unitTarget == "target" or unitTarget == "softenemy") and UnitCanAttack("player", unitTarget))
 
     -- same hit seen through another unit token (target + nameplate1)
+    -- no UnitGUID here: it returns secret values in groups and can't be compared
     local now = GetTime()
-    local key = (UnitGUID(unitTarget) or unitTarget) .. ":" .. tostring(amount) .. ":" .. tostring(flagText)
+    local key = tostring(amount) .. ":" .. tostring(flagText)
     if (key == LastCritKey and now == LastCritTime) then
         return
     end
@@ -92,6 +92,13 @@ function CritSounds:UnitCombatValidator(eventLogName, unitTarget, event, flagTex
             -- right after your own cast = direct heal, otherwise assume a HoT tick
             local trigger = (now - LastOwnCast <= CRIT_CAST_WINDOW) and "heals" or "hots"
             CritSounds_MakeSound(self.db.profile.soundFrequency, self.db.profile.soundChannel, self.db.profile.soundPack, trigger);
+        end
+
+    -- group: a crit right after your own cast is probably yours (one sound per cast)
+    elseif (flagText == "CRITICAL" and not LastOwnCastUsed and (now - LastOwnCast) <= GROUP_CAST_WINDOW) then
+        if ((event == "WOUND" and isEnemy and InCombat) or (event == "HEAL" and not isEnemy)) then
+            LastOwnCastUsed = true
+            CritSounds_MakeSound(self.db.profile.soundFrequency, self.db.profile.soundChannel, self.db.profile.soundPack, event == "HEAL" and "heals" or nil);
         end
     end
 
@@ -146,6 +153,7 @@ function CritSounds:LeftCombat(eventLogName)
     SecondEstimateDone = false
     LastCritKey = nil
     LastCritTime = 0
+    LastOwnCastUsed = false
 
 end
 
@@ -161,6 +169,7 @@ function CritSounds:EnteredCombat(eventLogName)
     SecondEstimateDone = false
     LastCritKey = nil
     LastCritTime = 0
+    LastOwnCastUsed = false
 
 end
 
