@@ -1,7 +1,4 @@
 CritSounds = LibStub("AceAddon-3.0"):NewAddon("CritSounds", "AceConsole-3.0", "AceEvent-3.0")
-local AC = LibStub("AceConfig-3.0")
-local ACD = LibStub("AceConfigDialog-3.0")
-local THIS_VERSION = C_AddOns.GetAddOnMetadata("CritSounds", "Version")
 
 local defaults = {
 	profile = {
@@ -9,109 +6,49 @@ local defaults = {
 		soundFrequency = 100,
 		soundChannel = "Master",
 		soundPack = "Main",
+		triggers = {
+			dots = true,
+			hots = true,
+			heals = true,
+			autoAttacks = true,
+			petAttacks = true,
+		},
 	},
 }
 
-local options = {
-	name = "Crit Sounds Settings " .. THIS_VERSION,
-	handler = CritSounds,
-	type = "group",
-	args = {
-		isEnabled = {
-			type = "toggle",
-			order = 1,
-			width = 1.5,
-			name = CRITS_TEXT_OPT_VAR_CRITSENABLED,
-			desc = CRITS_TEXT_OPT_TOOL_CRITSENABLED,
-			get = "GetIsEnabled",
-			set = "SetIsEnabled"
-		},
-		soundFrequency = {
-			type = "range",
-			order = 3,
-			name = "Crit Sound Frequency",
-			desc = "Set how often you want a crit to make a sound. Use this if crits are happening too often.",
-			width = 1.5,
-			get = "GetSoundFrequency",
-			set = "SetSoundFrequency",
-			min = 0, max = 100, step = 1,
-		},
-		soundChannel = {
-			type = "select",
-			order = 5,
-			name = "Sound Channel",
-			desc = "Pick the sound channel crit sounds will be played through (you can adjust volume through the normal settings)",
-			width = 1,
-			get = "GetSoundChannel",
-			set = "SetSoundChannel",
-			values = {
-				Master = "Master",
-				Music = "Music",
-				Effects = "Effects",
-				Ambiance = "Ambiance",
-				Dialog = "Dialog",
-			},
-			sorting = {
-				"Master",
-				"Music",
-				"Effects",
-				"Ambiance",
-				"Dialog",
-			}
-		},
-		soundPack = {
-			type = "select",
-			order = 5,
-			name = "Sound Pack",
-			desc = "Select the sound pack you would like to hear. You can add your own sounds to the folder and adjust the array in the code, but note that it may be overwritten by an update",
-			width = 1,
-			get = "GetSoundPack",
-			set = "SetSoundPack",
-			values = {
-				Main = "Main",
-				MJ = "MJ",
-				Waltuh = "Waltuh",
-				Faah = "Faah"
-			},
-			sorting = {
-				"Main",
-				"Faah",
-				"MJ",
-				"Waltuh",
-			}
-		},
-	},
-}
+
 
 function CritSounds:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("CritSoundsDB", defaults, true)
-
-	AC:RegisterOptionsTable("Crit Sounds_options", options)
-	self.optionsFrame, self.mainFrameId = ACD:AddToBlizOptions("Crit Sounds_options", "Crit Sounds")
-	_G["MainFrame"] = self.optionsFrame;
 
 	self:RegisterChatCommand("crit", "SlashCommand")
 	self:RegisterChatCommand("crits", "SlashCommand")
 	self:RegisterChatCommand("critsounds", "SlashCommand")
 
 	CritSounds_SetPack();
+	CritSounds_SyncDefaults();
 end
 
 function CritSounds:OnEnable()
-	local _, _, _, interfaceVersion = GetBuildInfo()
-	if (interfaceVersion < 120000 and (interfaceVersion < 16000 or 20000 < interfaceVersion)) then
-		self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED", "OnCombatLogEventUnfiltered")
-	else
-		self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", "CastSuccess")
-		self:RegisterEvent("UNIT_COMBAT", "UnitCombatValidator")
-		self:RegisterEvent("PLAYER_REGEN_ENABLED", "LeftCombat")
-		self:RegisterEvent("PLAYER_REGEN_DISABLED", "EnteredCombat")
-	end
+    local _, _, _, interfaceVersion = GetBuildInfo()
+
+    local isModernClient =
+        interfaceVersion >= 120000
+        or (interfaceVersion >= 16000 and interfaceVersion < 20000)
+
+    if not isModernClient then
+        self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED", "OnCombatLogEventUnfiltered")
+        return
+    end
+
+    self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", "CastSuccess")
+    self:RegisterEvent("UNIT_COMBAT", "UnitCombatValidator")
+    self:RegisterEvent("PLAYER_REGEN_ENABLED", "LeftCombat")
+    self:RegisterEvent("PLAYER_REGEN_DISABLED", "EnteredCombat")
 end
 
 function CritSounds:SlashCommand()
-	Settings.OpenToCategory(self.mainFrameId)
-	-- ACD:Open("Crit Sounds_options") -- Fallback if needed
+	Settings.OpenToCategory(CritSoundsCategory:GetID())
 end
 
 
@@ -139,192 +76,63 @@ end
 function CritSounds:SetSoundPack(info, value)
 	self.db.profile.soundPack = value
 end
+function CritSounds:GetPerCharacter(info)
+	return CritSoundsDB.perCharacter == true;
+end
+function CritSounds:SetPerCharacter(info, value)
+	CritSoundsDB.perCharacter = value;
+	CritSounds_SyncDefaults();
+end
+function CritSounds:GetTrigger(info, key)
+	return self.db.profile.triggers[key] ~= false
+end
+function CritSounds:SetTrigger(info, key, value)
+	self.db.profile.triggers[key] = value and true or false
+end
 
 
 function CritSounds_SetPack()
+	local pack = CritSounds.db.profile.soundPack
+	if not CritSoundsPacks[pack] then
+		pack = "BOZO_SOUNDS"
+	end
+	CritSounds.db.profile.soundPack = pack
+end
 
-	BOZO_SOUNDS = {
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\got.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\croissont.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\chia.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\bury_me.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\give_money.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\whistle.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\beam.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\final_ko.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\door_stuck.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\ultra_instinct.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\cj_again.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\halo.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\toad_scream.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\doakes_sus.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\gnome_woo.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\faah.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\dixie_horn.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\waltuh.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\67.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\not_a_bug.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\auroraborealis.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\longlong_man.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\ooooh.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\boom.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\bam.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\badabopboom.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\bap.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\pow.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\its_a_rock.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\i_need_it.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\get_some_help.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\Emotional Damage.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\Huh sound.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\Lightning Bolt.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\waltuh.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\Tony Hawk's Pro Skater 12 Special Trick sound effect.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\World of Warcraft Level Up Sound.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\You Got Mail.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\always sunny dayman song aaa.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\amogus1.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\amogus2.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\anotha one.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\ate the mic.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\baka mitai.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\banjo silly.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\bazinga.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\bing_chilling.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\bonk.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\bop it.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\bruh.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\but wait theres more.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\cant believe youve done this.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\come_pig.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\cry.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\darude song name.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\dbz_kameha.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\dbz_tele.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\dial up.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\doink groan.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\dropped rings.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\ds sound.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\earthbound_boss.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\eurobeat sound.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\failure.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\falcom_sax.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\fart slightly quieter.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\fireball.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\funky_town.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\game_show_win.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\garbage day.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\gong.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\hamster dance.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\hawk tuah.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\he need some milk.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\hi billy.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\inconceivable.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\its pikachu.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\john_cena_theme.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\law and order sound.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\lego_yoda.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\lizard.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\waltuh.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m1.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m10.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m11.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m12.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m13.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m14.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m15.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m2.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m3.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m4.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m5.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m6.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m7.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m8.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m9.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\mah_waife.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\mama luigi.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\mario yahoo.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\minecraft oof.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\mlg_theme.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\mlg_wow.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\nani.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\nfl short base boost.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\no i dont think i will.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\noice.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\nokia_ringtone.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\now_watch_this_drive.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\nyan cat.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\obamna.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\ok.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\pipes_falling.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\ps2 sound.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\pteww_sound.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\pull it.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\riff.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\roblox oof.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\robo_bich.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\sanic_theme.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\sax_guy.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\seinfeld fast mode.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\snake.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\soda.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\somebody toucha my spaghet.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\success.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\sunflower.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\taco_bell.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\thats a lotta damage.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\thats my as.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\thunderbolto.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\tidus_haha.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\tim_allen_grunt.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\toasty.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\twist it.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\vine_boom.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\waltuh.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\waterphone.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\we got em.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\what the dog doinn.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\whoah.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\whos that pokemon.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\wii sports intro.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\wii sports nice on.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\wilhelm.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\win95.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\wombo combo.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\xfiles_theme.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\xp boot.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\yee.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\yooo.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\you are already dead.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\za warudo.mp3",
-	};
+-- Initialize database with safety checks
+local function EnsureDB()
+	if not CritSoundsDB then
+		CritSoundsDB = {}
+	end
+	if not CritSoundsDB.soundEnabled then
+		CritSoundsDB.soundEnabled = {}
+	end
+	if not CritSoundsCharDB then
+		CritSoundsCharDB = {}
+	end
+	if not CritSoundsCharDB.soundEnabled then
+		CritSoundsCharDB.soundEnabled = {}
+	end
+end
 
-	WALTUH_PACK = {
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\waltuh.mp3",
-	};
+function CritSounds_GetEnabled()
+	EnsureDB()
+	if CritSoundsDB.perCharacter then
+		return CritSoundsCharDB.soundEnabled
+	end
+	return CritSoundsDB.soundEnabled
+end
 
-	FAAH_PACK = {
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\faah.mp3",
-	}
-
-	MJ_PACK = {
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m1.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m10.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m11.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m12.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m13.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m14.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m15.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m2.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m3.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m4.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m5.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m6.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m7.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m8.mp3",
-		"Interface\\AddOns\\CritSounds\\Sounds\\bozo\\m9.mp3",
-	};
-
-	-- TODO: Figure out how to auto-detect sound files in a directory
-
+function CritSounds_SyncDefaults()
+	local enabled = CritSounds_GetEnabled()
+	for packName, sounds in pairs(CritSoundsPacks or {}) do
+		if type(sounds) == "table" then
+			for _, soundFile in ipairs(sounds) do
+				local key = packName .. ":" .. soundFile
+				if enabled[key] == nil then
+					enabled[key] = true
+				end
+			end
+		end
+	end
 end
